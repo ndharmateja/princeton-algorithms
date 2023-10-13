@@ -19,7 +19,7 @@ Given a social network containing $n$ members and a log file containing $m$ time
 
 ### 2. Union-find with specific canonical element.
 
-For example, if one of the connected components is $\{1, 2, 6, 9\}$, then the $find()$ method should return $9$ for each of the four elements in the connected components.
+For example, if one of the connected components is $`\{1, 2, 6, 9\}`$, then the $find()$ method should return $9$ for each of the four elements in the connected components.
 
 - <details>
     <summary>Hint</summary>
@@ -36,7 +36,7 @@ For example, if one of the connected components is $\{1, 2, 6, 9\}$, then the $f
 
 ### 3. Successor with delete.
 
-Given a set of n integers $S=\{0,1,...,n−1\}$ and a sequence of requests of the following form:
+Given a set of n integers $S=`\{0,1,...,n−1\}`$ and a sequence of requests of the following form:
 
 - Remove $x$ from $S$.
 - Find the successor of $x$: the smallest $y$ in $S$ such that $y≥x$.

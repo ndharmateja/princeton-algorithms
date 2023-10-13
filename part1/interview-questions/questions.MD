@@ -36,7 +36,7 @@ For example, if one of the connected components is $`\{1, 2, 6, 9\}`$, then the 
 
 ### 3. Successor with delete.
 
-Given a set of n integers $S=`\{0,1,...,n−1\}`$ and a sequence of requests of the following form:
+Given a set of n integers $S=$ $`\{0,1,...,n−1\}`$ and a sequence of requests of the following form:
 
 - Remove $x$ from $S$.
 - Find the successor of $x$: the smallest $y$ in $S$ such that $y≥x$.

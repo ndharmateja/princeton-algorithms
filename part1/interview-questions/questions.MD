@@ -11,10 +11,6 @@ Given a social network containing $n$ members and a log file containing $m$ time
 
 - <details>
     <summary>Solution</summary>
-    <ol>
-    <li>hello</li>
-    <li>hello</li>
-    </ol>
   </details>
 
 ### 2. Union-find with specific canonical element.
@@ -28,10 +24,6 @@ For example, if one of the connected components is $`\{1, 2, 6, 9\}`$, then the 
 
 - <details>
     <summary>Solution</summary>
-    <ol>
-    <li>hello</li>
-    <li>hello</li>
-    </ol>
   </details>
 
 ### 3. Successor with delete.
@@ -50,8 +42,4 @@ Design a data type so that all operations (except construction) take logarithmic
 
 - <details>
     <summary>Solution</summary>
-    <ol>
-    <li>hello</li>
-    <li>hello</li>
-    </ol>
   </details>

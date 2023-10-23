@@ -11,6 +11,9 @@ Given a social network containing $n$ members and a log file containing $m$ time
 
 - <details>
     <summary>Solution</summary>
+    <ol>
+      <li>Use union find and keep doing union until all elements get merged into one set and that is the resulting timestamp</li>
+    </ol>
   </details>
 
 ### 2. Union-find with specific canonical element.
@@ -24,6 +27,11 @@ For example, if one of the connected components is $`\{1, 2, 6, 9\}`$, then the 
 
 - <details>
     <summary>Solution</summary>
+    <ol>
+      <li>We do Weighted Union Find with Path Compression but we also store the roots of all trees also maintain the biggest number in an array along with the size array and the parent array.</li>
+      <li>They won't be affected by path compression as the roots will still have their biggest number unchanged and once an element becomes a child in a tree, it will never become a root again. So it is okay if the biggest number for a child gets disturbed during path compression (just like for the size array).</li>
+      <li>When doing the union, get the biggest number in both trees (from the biggest array for both the roots) and the biggest value for the new root will be updated to that value.</li>
+    </ol>
   </details>
 
 ### 3. Successor with delete.
@@ -42,4 +50,10 @@ Design a data type so that all operations (except construction) take logarithmic
 
 - <details>
     <summary>Solution</summary>
+    <ol>
+      <li>We use the above Union Find Canonical data structure</li>
+      <li>All consecutive removed elements go in a single set</li>
+      <li>So we can easily find the next unremoved element (which is 1 greater than the root of that set which is the largest number in that set)</li>
+      <li>So when we want to remove an element, we union it with its left and right elements if they are also removed</li>
+    </ol>
   </details>

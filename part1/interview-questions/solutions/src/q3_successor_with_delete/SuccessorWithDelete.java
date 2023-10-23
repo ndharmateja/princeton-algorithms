@@ -17,7 +17,7 @@ public class SuccessorWithDelete {
     }
 
     /**
-     * Variant: we have sets of deleted elements
+     * Invariant: we have sets of deleted elements
      * We maintain those sets using union find canonical
      * for which each set has its root as the biggest value in that set
      * 

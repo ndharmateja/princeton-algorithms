@@ -23,6 +23,8 @@ public class TestBitonicArraySearch {
                                 { -5, -4, -3, 1, 2, 5, -15 },
                                 { 3, 5, 3, 2, 0 },
                                 { 3, 5, 3, 2, 0 },
+                                { 3, 5, 3, 2, 0 },
+                                { 3, 5, 3, 2, 0 }
                 };
                 int[] targets = new int[] {
                                 1,

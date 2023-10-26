@@ -20,8 +20,9 @@ public class BitonicArray {
         int n = array.length;
 
         // Find the index of the peak
+        // Peak can only exist in [1, n-2]
         BinarySearch bsMax = new BinarySearchMaximumIndex();
-        int maxIndex = bsMax.search(array, 0, n - 1, -1);
+        int maxIndex = bsMax.search(array, 1, n - 2, -1);
         if (array[maxIndex] == target)
             return maxIndex;
 

@@ -1,7 +1,6 @@
 package q5_bitonic_array_search;
 
 import q5_bitonic_array_search.binary_search.BinarySearch;
-import q5_bitonic_array_search.binary_search.BinarySearchAscending;
 import q5_bitonic_array_search.binary_search.BinarySearchDescending;
 import q5_bitonic_array_search.binary_search.BinarySearchMaximumIndex;
 
@@ -25,7 +24,7 @@ public class BitonicArray {
         int maxIndex = bsMax.search(array, 0, n - 1, -1);
 
         // Search the increasing part => in [0, maxIndex]
-        BinarySearch bsAsc = new BinarySearchAscending();
+        BinarySearch bsAsc = new BinarySearch();
         int ascIndex = bsAsc.search(array, 0, maxIndex, target);
         if (ascIndex != -1)
             return ascIndex;

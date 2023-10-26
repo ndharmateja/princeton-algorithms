@@ -1,10 +1,19 @@
 package q5_bitonic_array_search.binary_search;
 
-public abstract class BinarySearch {
-    protected abstract boolean shouldGoLeft(int[] array, int mid, int target);
+public class BinarySearch {
+    protected boolean shouldGoLeft(int[] array, int mid, int target) {
+        // In ascending order
+        // we should go left if array[mid] > target
+        return array[mid] > target;
+    }
 
-    protected abstract boolean shouldGoRight(int[] array, int mid, int target);
+    protected boolean shouldGoRight(int[] array, int mid, int target) {
+        // In ascending order
+        // we should go right if array[mid] < target
+        return array[mid] < target;
+    }
 
+    // Does binary search in ascending array
     public int search(int[] array, int lo, int hi, int target) {
         if (lo > hi)
             return -1;

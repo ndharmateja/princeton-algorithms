@@ -12,7 +12,7 @@ public class BitonicArray {
     /**
      * ~ 3 log n solution
      * 
-     * @param array  - array of n distinct ints
+     * @param array  - bitonic array of n distinct ints
      * @param target
      * @return
      */

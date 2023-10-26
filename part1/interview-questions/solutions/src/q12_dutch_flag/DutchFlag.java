@@ -3,9 +3,9 @@ package q12_dutch_flag;
 import java.util.Arrays;
 
 public class DutchFlag {
+    public static final char BLUE = 'b';
     public static final char RED = 'r';
     public static final char WHITE = 'w';
-    public static final char BLUE = 'b';
 
     private char[] colors;
     private int numSwapCalls = 0;
@@ -28,47 +28,47 @@ public class DutchFlag {
     }
 
     /**
-     * Invariant maintained: [R, R, R, R, W, W, W, W, -, ... , B, B, B, B]
+     * Invariant maintained: [B, B, B, B, R, R, R, R, -, ... , W, W, W, W]
      * 
-     * r -> index of the last red
-     * b -> index of the first blue
+     * b -> index of the last blue
+     * w -> index of the first white
      * 
-     * interval [0, r] -> reds
-     * interval [r + 1, i) -> whites
-     * interval [b, n)
+     * interval [0, b] -> blues
+     * interval [b + 1, i) -> reds
+     * interval [w, n) -> whites
      * 
      */
     public void arrange() {
-        int r = -1;
-        int b = colors.length;
+        int b = -1;
+        int w = colors.length;
 
         // i -> current cell's index
         int i = 0;
 
-        // Run as long as i < b
-        // Once i reaches b => all colors are done processing
-        while (i < b) {
+        // Run as long as i < w
+        // Once i reaches w => all colors are done processing
+        while (i < w) {
             char currColor = color(i);
-            // If current color is blue, swap it with the start of blue
+            // If current color is white, swap it with the start of white
             // subarray and we don't need to increment 'i' as the new color
             // which was swapped with blue will appear here
             // and we have to deal with it in the next iteration
-            if (currColor == BLUE) {
-                b--;
-                swap(i, b);
+            if (currColor == WHITE) {
+                w--;
+                swap(i, w);
                 continue;
             }
 
-            // If current color is red, swap it with the end of the red's
+            // If current color is blue, swap it with the end of the blue's
             // subarray
-            if (currColor == RED) {
-                r++;
-                swap(i, r);
+            if (currColor == BLUE) {
+                b++;
+                swap(i, b);
             }
 
-            // If color is white, we don't need to do anything
+            // If color is red, we don't need to do anything
 
-            // We need to increment 'i' if color is red/white to process
+            // We need to increment 'i' if color is blue/red to process
             // the next color in the next iteration
             i++;
         }
@@ -92,18 +92,18 @@ public class DutchFlag {
         for (int i = 0; i < colors.length - 1; i++) {
             // For a valid arrangement the only possible consecutive colors are
             // 1. equal
-            // 2. R, W
-            // 3. R, B
-            // 4. W, B
+            // 2. B, R
+            // 3. R, W
+            // 4. B, W
             char currColor = colors[i];
             char nextColor = colors[i + 1];
             if (currColor == nextColor)
                 continue;
+            if (currColor == BLUE && nextColor == RED)
+                continue;
             if (currColor == RED && nextColor == WHITE)
                 continue;
-            if (currColor == RED && nextColor == BLUE)
-                continue;
-            if (currColor == WHITE && nextColor == BLUE)
+            if (currColor == BLUE && nextColor == WHITE)
                 continue;
 
             // For any other consecutive color pair, return false

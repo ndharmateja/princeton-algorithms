@@ -22,10 +22,12 @@ public class BitonicArray {
         // Find the index of the peak
         BinarySearch bsMax = new BinarySearchMaximumIndex();
         int maxIndex = bsMax.search(array, 0, n - 1, -1);
+        if (array[maxIndex] == target)
+            return maxIndex;
 
-        // Search the increasing part => in [0, maxIndex]
+        // Search the increasing part => in [0, maxIndex - 1]
         BinarySearch bsAsc = new BinarySearch();
-        int ascIndex = bsAsc.search(array, 0, maxIndex, target);
+        int ascIndex = bsAsc.search(array, 0, maxIndex - 1, target);
         if (ascIndex != -1)
             return ascIndex;
 

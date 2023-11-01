@@ -83,10 +83,26 @@ public class BruteCollinearPoints {
         return segmentsArray;
     }
 
+    private static void drawAxes() {
+        StdDraw.setXscale(-5000, 36000);
+        StdDraw.setYscale(-5000, 36000);
+        StdDraw.textRight(-500, -500, "(0, 0)");
+        StdDraw.line(0, 0, 34678, 0);
+        StdDraw.line(0, 0, 0, 34678);
+    }
+
+    private static void drawPoint(Point p) {
+        StdDraw.setPenRadius(0.02);
+        StdDraw.setPenColor(StdDraw.RED);
+        p.draw();
+        StdDraw.setPenRadius();
+        StdDraw.setPenColor();
+    }
+
     public static void main(String[] args) {
         // read the n points from a file
         // String filename = args[0];
-        String filename = "data/equidistant.txt";
+        String filename = "data/input80.txt";
         In in = new In(filename);
         int n = in.readInt();
         Point[] points = new Point[n];
@@ -98,10 +114,9 @@ public class BruteCollinearPoints {
 
         // draw the points
         StdDraw.enableDoubleBuffering();
-        StdDraw.setXscale(0, 32768);
-        StdDraw.setYscale(0, 32768);
+        drawAxes();
         for (Point p : points) {
-            p.draw();
+            drawPoint(p);
         }
         StdDraw.show();
 

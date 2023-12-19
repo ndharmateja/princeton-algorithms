@@ -11,6 +11,7 @@ public class KdTree {
 
     private static class Node {
         Point2D point;
+        RectHV boundary;
         Node left;
         Node right;
 
@@ -65,6 +66,10 @@ public class KdTree {
             throw new IllegalArgumentException();
 
         root = insert(root, p, true);
+
+        // Assign node's boundary first time
+        if (root.boundary == null)
+            root.boundary = new RectHV(0, 0, 1, 1);
     }
 
     private Node insert(Node node, Point2D p, boolean isEvenLevel) {
@@ -76,25 +81,34 @@ public class KdTree {
         if (p.equals(node.point))
             return node;
 
-        if (shouldGoLeft(node, p, isEvenLevel))
+        if (shouldGoLeft(node, p, isEvenLevel)) {
             node.left = insert(node.left, p, !isEvenLevel);
-        else
+
+            // Assign node's boundary first time
+            if (node.left.boundary == null)
+                node.left.boundary = getLeftChildBoundary(node, isEvenLevel);
+        } else {
             node.right = insert(node.right, p, !isEvenLevel);
+
+            // Assign node's boundary first time
+            if (node.right.boundary == null)
+                node.right.boundary = getRightChildBoundary(node, isEvenLevel);
+        }
 
         return node;
     }
 
-    private RectHV getLeftChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
+    private RectHV getLeftChildBoundary(Node node, boolean isEvenLevel) {
         RectHV leftChildBoundary = isEvenLevel
-                ? new RectHV(boundary.xmin(), boundary.ymin(), node.point.x(), boundary.ymax())
-                : new RectHV(boundary.xmin(), boundary.ymin(), boundary.xmax(), node.point.y());
+                ? new RectHV(node.boundary.xmin(), node.boundary.ymin(), node.point.x(), node.boundary.ymax())
+                : new RectHV(node.boundary.xmin(), node.boundary.ymin(), node.boundary.xmax(), node.point.y());
         return leftChildBoundary;
     }
 
-    private RectHV getRightChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
+    private RectHV getRightChildBoundary(Node node, boolean isEvenLevel) {
         RectHV rightChildBoundary = isEvenLevel
-                ? new RectHV(node.point.x(), boundary.ymin(), boundary.xmax(), boundary.ymax())
-                : new RectHV(boundary.xmin(), node.point.y(), boundary.xmax(), boundary.ymax());
+                ? new RectHV(node.point.x(), node.boundary.ymin(), node.boundary.xmax(), node.boundary.ymax())
+                : new RectHV(node.boundary.xmin(), node.point.y(), node.boundary.xmax(), node.boundary.ymax());
         return rightChildBoundary;
     }
 
@@ -124,32 +138,28 @@ public class KdTree {
 
     // draw all points to standard draw
     public void draw() {
-        draw(root, true, new RectHV(0, 0, 1, 1));
+        draw(root, true);
     }
 
-    private void draw(Node node, boolean isEvenLevel, RectHV boundary) {
+    private void draw(Node node, boolean isEvenLevel) {
         // If node is null, don't need to do anything
         if (node == null)
             return;
 
         // Draw left subtree recursively
         // Its boundary will be reduced accordingly
-        RectHV leftChildBoundary = getLeftChildBoundary(node, isEvenLevel, boundary);
-        draw(node.left, !isEvenLevel, leftChildBoundary);
+        draw(node.left, !isEvenLevel);
 
         // Draw the curr point and splitting line
         if (isEvenLevel)
-            // draw vertical red line at curr point's x
-            drawRedVerticalLine(node.point.x(), boundary.ymin(), boundary.ymax());
+            drawRedVerticalLine(node);
         else
-            // draw horizontal blue line at curr point's y
-            drawBlueHorizontalLine(node.point.y(), boundary.xmin(), boundary.xmax());
+            drawBlueHorizontalLine(node);
         drawPoint(node.point);
 
         // Draw the right subtree recursively
         // Its boundary will be reduced accordingly
-        RectHV rightChildBoundary = getRightChildBoundary(node, isEvenLevel, boundary);
-        draw(node.right, !isEvenLevel, rightChildBoundary);
+        draw(node.right, !isEvenLevel);
     }
 
     private void drawPoint(Point2D p) {
@@ -158,13 +168,19 @@ public class KdTree {
         p.draw();
     }
 
-    private void drawRedVerticalLine(double x, double y1, double y2) {
+    private void drawRedVerticalLine(Node node) {
+        double x = node.point.x();
+        double y1 = node.boundary.ymin();
+        double y2 = node.boundary.ymax();
         StdDraw.setPenColor(StdDraw.RED);
         StdDraw.setPenRadius(LINE_PEN_RADIUS);
         StdDraw.line(x, y1, x, y2);
     }
 
-    private void drawBlueHorizontalLine(double y, double x1, double x2) {
+    private void drawBlueHorizontalLine(Node node) {
+        double y = node.point.y();
+        double x1 = node.boundary.xmin();
+        double x2 = node.boundary.xmax();
         StdDraw.setPenColor(StdDraw.BLUE);
         StdDraw.setPenRadius(LINE_PEN_RADIUS);
         StdDraw.line(x1, y, x2, y);
@@ -174,23 +190,23 @@ public class KdTree {
      * RANGE SEARCH & NEAREST NEIGHBOUR *
      ************************************/
 
-    // all points that are inside the rectangle (or on the boundary){}
+    // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV query) {
         if (query == null)
             throw new IllegalArgumentException();
         List<Point2D> output = new ArrayList<>();
-        range(root, true, new RectHV(0, 0, 1, 1), query, output);
+        range(root, true, query, output);
         return output;
     }
 
-    private void range(Node node, boolean isEvenLevel, RectHV boundary, RectHV queryRect, List<Point2D> list) {
+    private void range(Node node, boolean isEvenLevel, RectHV queryRect, List<Point2D> list) {
         // Base case
         if (node == null)
             return;
 
         // If the node's boundary doesn't intersect with the query rectangle
         // we don't have to explore this node as there won't be any points
-        if (!queryRect.intersects(boundary))
+        if (!queryRect.intersects(node.boundary))
             return;
 
         // If node's point is present in the query rectangle
@@ -200,13 +216,11 @@ public class KdTree {
 
         // Explore left child (without checking if we have to because
         // that check will be done inside the call of the left child)
-        RectHV leftChildBoundary = getLeftChildBoundary(node, isEvenLevel, boundary);
-        range(node.left, !isEvenLevel, leftChildBoundary, queryRect, list);
+        range(node.left, !isEvenLevel, queryRect, list);
 
         // Explore right child (without checking if we have to because
         // that check will be done inside the call of the left child)
-        RectHV rightChildBoundary = getRightChildBoundary(node, isEvenLevel, boundary);
-        range(node.right, !isEvenLevel, rightChildBoundary, queryRect, list);
+        range(node.right, !isEvenLevel, queryRect, list);
     }
 
     public Point2D nearest(Point2D query) {
@@ -214,10 +228,10 @@ public class KdTree {
             throw new IllegalArgumentException();
         if (root == null)
             return null;
-        return nearest(root, true, new RectHV(0, 0, 1, 1), query, root.point);
+        return nearest(root, true, query, root.point);
     }
 
-    private Point2D nearest(Node node, boolean isEvenLevel, RectHV boundary, Point2D query, Point2D nearestPointSoFar) {
+    private Point2D nearest(Node node, boolean isEvenLevel, Point2D query, Point2D nearestPointSoFar) {
         // base case
         if (node == null)
             return nearestPointSoFar;
@@ -231,41 +245,29 @@ public class KdTree {
         // than the nearest point so far
         nearestPointSoFar = getMinimumPoint(nearestPointSoFar, node.point, query);
 
-        // get boundaries of left and right children
-        RectHV leftChildBoundary = getLeftChildBoundary(node, isEvenLevel, boundary);
-        RectHV rightChildBoundary = getRightChildBoundary(node, isEvenLevel, boundary);
-
         Node firstNodeToExplore;
         Node secondNodeToExplore;
-        RectHV firstChildBoundary;
-        RectHV secondChildBoundary;
         if (shouldGoLeft(node, query, isEvenLevel)) {
             firstNodeToExplore = node.left;
             secondNodeToExplore = node.right;
-            firstChildBoundary = leftChildBoundary;
-            secondChildBoundary = rightChildBoundary;
         } else {
             firstNodeToExplore = node.right;
             secondNodeToExplore = node.left;
-            firstChildBoundary = rightChildBoundary;
-            secondChildBoundary = leftChildBoundary;
         }
 
         // explore the direction in which query point is there
         // and update the nearest distance accordingly
-        Point2D firstNodeNearest = nearest(firstNodeToExplore, !isEvenLevel, firstChildBoundary, query,
-                nearestPointSoFar);
+        Point2D firstNodeNearest = nearest(firstNodeToExplore, !isEvenLevel, query, nearestPointSoFar);
         nearestPointSoFar = getMinimumPoint(nearestPointSoFar, firstNodeNearest, query);
 
         // Explore the second direction only if there is a possibility
         // of a closer point
         // If not possible, we can return the nearest we found so far
-        if (!canBoundaryContainNearest(secondChildBoundary, nearestPointSoFar, query))
+        if (!canBoundaryContainNearest(secondNodeToExplore, nearestPointSoFar, query))
             return nearestPointSoFar;
 
         // Explore the second direction and update the nearest point accordingly
-        Point2D secondNodeNearest = nearest(secondNodeToExplore, !isEvenLevel, secondChildBoundary, query,
-                nearestPointSoFar);
+        Point2D secondNodeNearest = nearest(secondNodeToExplore, !isEvenLevel, query, nearestPointSoFar);
         nearestPointSoFar = getMinimumPoint(nearestPointSoFar, secondNodeNearest, query);
 
         // Return the nearest point
@@ -282,8 +284,13 @@ public class KdTree {
         return nearestSoFar;
     }
 
-    private boolean canBoundaryContainNearest(RectHV boundary, Point2D nearestSoFar, Point2D queryPoint) {
-        return boundary.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint);
+    private boolean canBoundaryContainNearest(Node node, Point2D nearestSoFar, Point2D queryPoint) {
+        // because if node is null
+        // no points to even see
+        if (node == null)
+            return false;
+
+        return node.boundary.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint);
     }
 
     public static void main(String[] args) {

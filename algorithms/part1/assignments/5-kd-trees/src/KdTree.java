@@ -6,8 +6,8 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class KdTree {
-    private static final double LINE_PEN_RADIUS = 0.002;
     private static final double POINT_PEN_RADIUS = 0.01;
+    private static final double LINE_PEN_RADIUS = POINT_PEN_RADIUS / 5;
 
     private static class Node {
         Point2D point;
@@ -84,6 +84,20 @@ public class KdTree {
         return node;
     }
 
+    private RectHV getLeftChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
+        RectHV leftChildBoundary = isEvenLevel
+                ? new RectHV(boundary.xmin(), boundary.ymin(), node.point.x(), boundary.ymax())
+                : new RectHV(boundary.xmin(), boundary.ymin(), boundary.xmax(), node.point.y());
+        return leftChildBoundary;
+    }
+
+    private RectHV getRightChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
+        RectHV rightChildBoundary = isEvenLevel
+                ? new RectHV(node.point.x(), boundary.ymin(), boundary.xmax(), boundary.ymax())
+                : new RectHV(boundary.xmin(), node.point.y(), boundary.xmax(), boundary.ymax());
+        return rightChildBoundary;
+    }
+
     // does the set contain point p?
     public boolean contains(Point2D p) {
         if (p == null)
@@ -108,41 +122,9 @@ public class KdTree {
      * DRAWING *
      ***********/
 
-    private RectHV getLeftChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
-        RectHV leftChildBoundary = isEvenLevel
-                ? new RectHV(boundary.xmin(), boundary.ymin(), node.point.x(), boundary.ymax())
-                : new RectHV(boundary.xmin(), boundary.ymin(), boundary.xmax(), node.point.y());
-        return leftChildBoundary;
-    }
-
-    private RectHV getRightChildBoundary(Node node, boolean isEvenLevel, RectHV boundary) {
-        RectHV rightChildBoundary = isEvenLevel
-                ? new RectHV(node.point.x(), boundary.ymin(), boundary.xmax(), boundary.ymax())
-                : new RectHV(boundary.xmin(), node.point.y(), boundary.xmax(), boundary.ymax());
-        return rightChildBoundary;
-    }
-
     // draw all points to standard draw
     public void draw() {
         draw(root, true, new RectHV(0, 0, 1, 1));
-    }
-
-    private void drawPoint(Point2D p) {
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.setPenRadius(POINT_PEN_RADIUS);
-        p.draw();
-    }
-
-    private void drawRedVerticalLine(double x, double y1, double y2) {
-        StdDraw.setPenColor(StdDraw.RED);
-        StdDraw.setPenRadius(LINE_PEN_RADIUS);
-        StdDraw.line(x, y1, x, y2);
-    }
-
-    private void drawBlueHorizontalLine(double y, double x1, double x2) {
-        StdDraw.setPenColor(StdDraw.BLUE);
-        StdDraw.setPenRadius(LINE_PEN_RADIUS);
-        StdDraw.line(x1, y, x2, y);
     }
 
     private void draw(Node node, boolean isEvenLevel, RectHV boundary) {
@@ -168,6 +150,24 @@ public class KdTree {
         // Its boundary will be reduced accordingly
         RectHV rightChildBoundary = getRightChildBoundary(node, isEvenLevel, boundary);
         draw(node.right, !isEvenLevel, rightChildBoundary);
+    }
+
+    private void drawPoint(Point2D p) {
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(POINT_PEN_RADIUS);
+        p.draw();
+    }
+
+    private void drawRedVerticalLine(double x, double y1, double y2) {
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.setPenRadius(LINE_PEN_RADIUS);
+        StdDraw.line(x, y1, x, y2);
+    }
+
+    private void drawBlueHorizontalLine(double y, double x1, double x2) {
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.setPenRadius(LINE_PEN_RADIUS);
+        StdDraw.line(x1, y, x2, y);
     }
 
     /************************************
@@ -207,20 +207,6 @@ public class KdTree {
         // that check will be done inside the call of the left child)
         RectHV rightChildBoundary = getRightChildBoundary(node, isEvenLevel, boundary);
         range(node.right, !isEvenLevel, rightChildBoundary, queryRect, list);
-    }
-
-    // a nearest neighbor in the set to point p; null if the set is empty
-    private Point2D getMinimumPoint(Point2D nearestSoFar, Point2D newPoint, Point2D queryPoint) {
-        assert nearestSoFar != null;
-        assert newPoint != null;
-
-        if (newPoint.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint))
-            return newPoint;
-        return nearestSoFar;
-    }
-
-    private boolean canBoundaryContainNearest(RectHV boundary, Point2D nearestSoFar, Point2D queryPoint) {
-        return boundary.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint);
     }
 
     public Point2D nearest(Point2D query) {
@@ -284,6 +270,20 @@ public class KdTree {
 
         // Return the nearest point
         return nearestPointSoFar;
+    }
+
+    // a nearest neighbor in the set to point p; null if the set is empty
+    private Point2D getMinimumPoint(Point2D nearestSoFar, Point2D newPoint, Point2D queryPoint) {
+        assert nearestSoFar != null;
+        assert newPoint != null;
+
+        if (newPoint.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint))
+            return newPoint;
+        return nearestSoFar;
+    }
+
+    private boolean canBoundaryContainNearest(RectHV boundary, Point2D nearestSoFar, Point2D queryPoint) {
+        return boundary.distanceSquaredTo(queryPoint) < nearestSoFar.distanceSquaredTo(queryPoint);
     }
 
     public static void main(String[] args) {

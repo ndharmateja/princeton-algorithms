@@ -1,3 +1,4 @@
+
 /******************************************************************************
  *  Compilation:  javac RangeSearchVisualizer.java
  *  Execution:    java RangeSearchVisualizer input.txt
@@ -22,7 +23,8 @@ public class RangeSearchVisualizer {
     public static void main(String[] args) {
 
         // initialize the data structures from file
-        String filename = args[0];
+        // String filename = args[0];
+        String filename = "data/input10.txt";
         In in = new In(filename);
         PointSET brute = new PointSET();
         KdTree kdtree = new KdTree();
@@ -34,9 +36,9 @@ public class RangeSearchVisualizer {
             brute.insert(p);
         }
 
-        double x0 = 0.0, y0 = 0.0;      // initial endpoint of rectangle
-        double x1 = 0.0, y1 = 0.0;      // current location of mouse
-        boolean isDragging = false;     // is the user dragging a rectangle
+        double x0 = 0.0, y0 = 0.0; // initial endpoint of rectangle
+        double x1 = 0.0, y1 = 0.0; // current location of mouse
+        boolean isDragging = false; // is the user dragging a rectangle
 
         // draw the points
         StdDraw.clear();
@@ -75,7 +77,7 @@ public class RangeSearchVisualizer {
 
             // draw the rectangle
             RectHV rect = new RectHV(Math.min(x0, x1), Math.min(y0, y1),
-                                     Math.max(x0, x1), Math.max(y0, y1));
+                    Math.max(x0, x1), Math.max(y0, y1));
             StdDraw.setPenColor(StdDraw.BLACK);
             StdDraw.setPenRadius();
             rect.draw();

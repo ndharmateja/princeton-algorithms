@@ -1,44 +1,79 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
 public class PointSET {
+    private TreeSet<Point2D> set;
+
     // construct an empty set of points
     public PointSET() {
+        set = new TreeSet<>();
     }
 
     // is the set empty?
     public boolean isEmpty() {
-        return false;
+        return set.isEmpty();
     }
 
     // number of points in the set
     public int size() {
-        return -1;
+        return set.size();
     }
 
     // add the point to the set (if it is not already in the set){}
     public void insert(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
+        set.add(p);
     }
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
-        return false;
+        if (p == null)
+            throw new IllegalArgumentException();
+        return set.contains(p);
     }
 
     // draw all points to standard draw
     public void draw() {
+        for (Point2D p : set) {
+            p.draw();
+        }
     }
 
     // all points that are inside the rectangle (or on the boundary){}
     public Iterable<Point2D> range(RectHV rect) {
-        return null;
+        if (rect == null)
+            throw new IllegalArgumentException();
+        List<Point2D> output = new ArrayList<>();
+        for (Point2D p : set) {
+            if (rect.contains(p))
+                output.add(p);
+        }
+        return output;
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
-    public Point2D nearest(Point2D p) {
-        return null;
-    }
-
-    public static void main(String[] args) {
+    public Point2D nearest(Point2D query) {
+        if (query == null)
+            throw new IllegalArgumentException();
+        Point2D nearestPoint = null;
+        double minDistanceSquared = Double.POSITIVE_INFINITY;
+        for (Point2D p : set) {
+            if (nearestPoint == null) {
+                nearestPoint = p;
+                minDistanceSquared = p.distanceSquaredTo(query);
+                continue;
+            }
+            double currDistanceSquared = p.distanceSquaredTo(query);
+            if (currDistanceSquared < minDistanceSquared) {
+                nearestPoint = p;
+                minDistanceSquared = currDistanceSquared;
+            }
+        }
+        return nearestPoint;
     }
 }

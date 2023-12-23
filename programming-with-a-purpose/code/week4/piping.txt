@@ -1,0 +1,1 @@
+java RandomSeq.java 100000 | java Average.java

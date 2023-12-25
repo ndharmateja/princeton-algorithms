@@ -55,8 +55,65 @@ public class AudioCollage {
         return output;
     }
 
-    // Creates an audio collage and plays it on standard audio.
+    private static double[] repeat(double[] a, int n) {
+        double[] output = new double[n * a.length];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < a.length; j++) {
+                output[i * a.length + j] = a[j];
+            }
+        }
+        return output;
+    }
+
+    private static double[] normalize(double[] a) {
+        double maxAbs = 0;
+        for (double val : a) {
+            if (Math.abs(val) > maxAbs)
+                maxAbs = Math.abs(val);
+        }
+        if (maxAbs > 1) {
+            double alpha = 1 / maxAbs;
+            return amplify(a, alpha);
+        }
+        return a;
+    }
+
+    private static double[] trimRight(double[] a, double newDuration) {
+        int m = (int) Math.floor(newDuration * 44100);
+        double[] output = new double[m];
+        for (int i = 0; i < output.length; i++) {
+            output[i] = a[i];
+        }
+        return output;
+    }
+
+    private static double[] merge(double[][] parts) {
+        double[] output = merge(parts[0], parts[1]);
+        for (int i = 2; i < parts.length; i++) {
+            output = merge(output, parts[i]);
+        }
+        return output;
+    }
+
+    // Creates an audio collage and plays
     // See below for the requirements.
     public static void main(String[] args) {
+        double[] beatbox = StdAudio.read("beatbox.wav");
+        double[] cow = StdAudio.read("cow.wav");
+        double[] dialup = StdAudio.read("dialup.wav");
+        double[] piano = StdAudio.read("piano.wav");
+        double[] singer = StdAudio.read("singer.wav");
+
+        // Merge parts and normalize
+        double[][] parts = {
+                dialup,
+                mix(amplify(singer, 2), changeSpeed(repeat(beatbox, 4), 0.75)),
+                mix(repeat(trimRight(cow, 2.5), 2), piano),
+                reverse(mix(repeat(trimRight(cow, 2.5), 2), piano)),
+        };
+        double[] finalAudio = normalize(merge(parts));
+
+        // Play
+        StdAudio.play(finalAudio);
     }
 }

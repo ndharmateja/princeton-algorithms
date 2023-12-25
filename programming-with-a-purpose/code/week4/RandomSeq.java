@@ -1,5 +1,3 @@
-import edu.princeton.cs.algs4.StdOut;
-
 public class RandomSeq {
     public static void main(String[] args) {
         int n = Integer.parseInt(args[0]);

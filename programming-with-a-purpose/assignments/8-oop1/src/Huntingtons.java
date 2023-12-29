@@ -23,5 +23,4 @@ public class Huntingtons {
         String filename = args[0];
         StdOut.println(filename);
     }
-
 }

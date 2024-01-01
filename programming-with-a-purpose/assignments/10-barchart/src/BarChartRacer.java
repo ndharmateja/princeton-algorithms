@@ -74,6 +74,6 @@ public class BarChartRacer {
         }
 
         // Stop the bgm
-        // StdAudio.stopInBackground();
+        StdAudio.stopInBackground();
     }
 }

@@ -55,11 +55,11 @@ public class BarChart {
     private static Color[] initColors() {
 
         // 12 colors from http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
-        String[] hex12 = {
-                "#80b1d3", "#fdb462", "#b3de69", "#fccde5",
-                "#8dd3c7", "#ffffb3", "#bebada", "#fb8072",
-                "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"
-        };
+        // String[] hex12 = {
+        // "#80b1d3", "#fdb462", "#b3de69", "#fccde5",
+        // "#8dd3c7", "#ffffb3", "#bebada", "#fb8072",
+        // "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"
+        // };
 
         // 20 colors from https://vega.github.io/vega/docs/schemes/
         // replaced #d62728 with #d64c4c

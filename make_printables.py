@@ -1,98 +1,95 @@
 import json
 import os
-from io import BytesIO
+import shutil
 
-from pdf2image import convert_from_bytes
+from pdf2image import convert_from_path
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
+# === CONFIG ===
 SLIDES_FOLDER = "./algorithms/part2/slides"
 NOTES_JSON_PATH = f"{SLIDES_FOLDER}/notes.json"
+OUTPUT_FOLDER = f"{SLIDES_FOLDER}/printable"
+
+# === MAIN ===
 
 
-def extract_pages(pdf_path, page_spec):
-    reader = PdfReader(pdf_path)
-    writer = PdfWriter()
-    for part in page_spec.split(","):
+def parse_pages(pages_str):
+    pages = []
+    for part in pages_str.split(","):
         if "-" in part:
             start, end = map(int, part.split("-"))
-            for i in range(start, end + 1):
-                writer.add_page(reader.pages[i - 1])
+            pages.extend(range(start, end + 1))
         else:
-            i = int(part)
-            writer.add_page(reader.pages[i - 1])
-    out = BytesIO()
-    writer.write(out)
-    out.seek(0)
-    return out
+            pages.append(int(part))
+    return [p - 1 for p in pages]  # 0-based for PyPDF2
 
 
-def make_two_per_page(input_pdf, output_pdf):
-    """Create an A4 PDF with 2 slides per page (portrait layout)."""
-    with open(input_pdf, "rb") as f:
-        images = convert_from_bytes(f.read(), dpi=150)
+def create_printable_pdf():
+    if not os.path.exists(NOTES_JSON_PATH):
+        print(f"❌ notes.json not found at: {NOTES_JSON_PATH}")
+        return
 
-    packet = BytesIO()
-    c = canvas.Canvas(packet, pagesize=A4)
-    width, height = A4
-    margin = 10 * mm
-    usable_width = width - 2 * margin
-    usable_height = (height - 3 * margin) / 2  # two slides per page
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    for i in range(0, len(images), 2):
-        for j in range(2):
-            if i + j >= len(images):
-                continue
-            y_offset = height - margin - (j + 1) * usable_height - j * margin
-            img = images[i + j]
-            c.drawInlineImage(
-                img,
-                margin,
-                y_offset,
-                usable_width,
-                usable_height,
-                preserveAspectRatio=True,
-                anchor="n",
-            )
-        c.showPage()
-
-    c.save()
-    packet.seek(0)
-
-    with open(output_pdf, "wb") as f:
-        f.write(packet.read())
-
-
-def main():
     with open(NOTES_JSON_PATH, "r") as f:
-        notes = json.load(f)
+        notes_data = json.load(f)
 
-    os.makedirs(f"{SLIDES_FOLDER}/selected", exist_ok=True)
-    os.makedirs(f"{SLIDES_FOLDER}/print_ready", exist_ok=True)
+    for pdf_name, page_str in notes_data.items():
+        input_pdf_path = os.path.join(SLIDES_FOLDER, pdf_name)
+        output_pdf_path = os.path.join(OUTPUT_FOLDER, f"print-{pdf_name}")
 
-    for filename, pages in notes.items():
-        src = f"{SLIDES_FOLDER}/{filename}"
-        selected_pdf = (
-            f"{SLIDES_FOLDER}/selected/{filename.replace('.pdf', '_selected.pdf')}"
-        )
-        print_ready_pdf = (
-            f"{SLIDES_FOLDER}/print_ready/{filename.replace('.pdf', '_print.pdf')}"
-        )
-
-        if not os.path.exists(src):
-            print(f"❌ File not found: {src}")
+        if os.path.exists(output_pdf_path):
+            print(f"⚠️  Skipping {pdf_name} — printable version already exists.")
             continue
 
-        print(f"📘 Processing {filename} -> pages {pages}")
-        extracted = extract_pages(src, pages)
-        with open(selected_pdf, "wb") as f:
-            f.write(extracted.read())
+        if not os.path.exists(input_pdf_path):
+            print(f"❌ Missing PDF: {pdf_name}")
+            continue
 
-        make_two_per_page(selected_pdf, print_ready_pdf)
-        print(f"✅ Created {print_ready_pdf}\n")
+        print(f"🧩 Processing: {pdf_name}")
+
+        # Step 1: Extract selected pages
+        reader = PdfReader(input_pdf_path)
+        writer = PdfWriter()
+        for page_num in parse_pages(page_str):
+            if 0 <= page_num < len(reader.pages):
+                writer.add_page(reader.pages[page_num])
+        selected_pdf_path = os.path.join(OUTPUT_FOLDER, f"selected-{pdf_name}")
+        with open(selected_pdf_path, "wb") as out_f:
+            writer.write(out_f)
+
+        # Step 2: Convert to images and create 2-per-page A4 PDF
+        images = convert_from_path(selected_pdf_path, dpi=150)
+        c = canvas.Canvas(output_pdf_path, pagesize=A4)
+        width, height = A4
+        img_height = height / 2
+
+        for i in range(0, len(images), 2):
+            y_positions = [img_height, 0]
+            for j in range(2):
+                if i + j < len(images):
+                    img_path = f"{OUTPUT_FOLDER}/tmp-{i+j}.jpg"
+                    images[i + j].save(img_path, "JPEG")
+                    c.drawImage(
+                        img_path, 0, y_positions[j], width=width, height=img_height
+                    )
+                    os.remove(img_path)
+            c.showPage()
+
+        c.save()
+        os.remove(selected_pdf_path)
+
+        print(f"✅ Created printable PDF: {output_pdf_path}")
+
+    # Step 3: Clean up temporary folder
+    if os.path.exists(OUTPUT_FOLDER) and not os.listdir(OUTPUT_FOLDER):
+        shutil.rmtree(OUTPUT_FOLDER)
+        print(f"🧹 Removed temporary folder: {OUTPUT_FOLDER}")
+    else:
+        print(f"📂 Kept output folder: {OUTPUT_FOLDER}")
 
 
 if __name__ == "__main__":
-    main()
+    create_printable_pdf()

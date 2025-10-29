@@ -105,8 +105,6 @@ public class WordNet {
     public int distance(String nounA, String nounB) {
         if (nounA == null || nounB == null)
             throw new IllegalArgumentException();
-        if (nounA.equals(nounB))
-            return 0;
         return this.wordnetSap.length(this.nounToSynsetIdsMap.get(nounA), this.nounToSynsetIdsMap.get(nounB));
     }
 
@@ -115,8 +113,6 @@ public class WordNet {
     public String sap(String nounA, String nounB) {
         if (nounA == null || nounB == null)
             throw new IllegalArgumentException();
-        if (nounA.equals(nounB))
-            return nounA;
         int ancestorId = this.wordnetSap.ancestor(this.nounToSynsetIdsMap.get(nounA),
                 this.nounToSynsetIdsMap.get(nounB));
         return this.synsetIdToStringMap.get(ancestorId);

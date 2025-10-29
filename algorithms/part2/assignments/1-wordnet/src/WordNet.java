@@ -7,32 +7,23 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 
 public class WordNet {
-    // synsetIdToNounsMap
-    // key: synset id (integer)
-    // value: set of strings that belong to this id
-    private Map<Integer, Set<String>> synsetIdToNounsMap;
-
     // synsetIdToStringMap
     // key: synset id (integer)
     // value: string of nouns stored as is
-    private Map<Integer, String> synsetIdToStringMap;
+    private final Map<Integer, String> synsetIdToStringMap;
 
     // nounToSynsetIdsMap
     // key: noun
     // value: set of integers to whose id this noun belongs to
     // a noun can belong to multiple synset ids
-    private Map<String, Set<Integer>> nounToSynsetIdsMap;
-
-    // Stores the directed graph of the wordnet
-    private Digraph wordnetGraph;
+    private final Map<String, Set<Integer>> nounToSynsetIdsMap;
 
     // The SAP object to answer shortest ancestor path queries
-    private SAP wordnetSap;
+    private final SAP wordnetSap;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         // Create the hash map objects
-        synsetIdToNounsMap = new HashMap<>();
         synsetIdToStringMap = new HashMap<>();
         nounToSynsetIdsMap = new HashMap<>();
 
@@ -50,7 +41,7 @@ public class WordNet {
             // Put the (<synset id>, <synset string>) pair in the synsetIdToStringMap
             synsetIdToStringMap.put(synsetId, synsetNounsString);
 
-            // Create a set of strings to store the nound related to the current id
+            // Create a set of strings to store the nouns related to the current id
             Set<String> synsetNounsSet = new HashSet<>();
 
             for (String noun : synsetNounsString.split(" ")) {
@@ -64,14 +55,12 @@ public class WordNet {
                 }
                 nounToSynsetIdsMap.get(noun).add(synsetId);
             }
-
-            // Put the (<synset id>, set<synset noun>) pair in the synsetIdToNounsMap
-            synsetIdToNounsMap.put(synsetId, synsetNounsSet);
         }
 
         // Now that we have the number of vertices, we can create the wordnet graph
-        int numSynsets = synsetIdToNounsMap.size();
-        wordnetGraph = new Digraph(numSynsets);
+        // Stores the directed graph of the wordnet
+        int numSynsets = synsetIdToStringMap.size();
+        Digraph wordnetGraph = new Digraph(numSynsets);
 
         // Read the hypernyms file and add the edges
         in = new In(hypernyms);

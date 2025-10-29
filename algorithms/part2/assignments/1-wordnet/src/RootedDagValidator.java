@@ -2,7 +2,7 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.DirectedCycle;
 
 public class RootedDagValidator {
-    private Digraph graph;
+    private final Digraph graph;
 
     public RootedDagValidator(Digraph graph) {
         this.graph = graph;

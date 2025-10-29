@@ -107,6 +107,10 @@ public class SAP {
      * @throws IllegalArgumentException if either vertex index is invalid
      */
     public int length(int v, int w) {
+        if (!isVertexValid(v) || !isVertexValid(w))
+            throw new IllegalArgumentException();
+        if (v == w)
+            return 0;
         return length(List.of(v), List.of(w));
     }
 
@@ -128,6 +132,10 @@ public class SAP {
      * @throws IllegalArgumentException if either vertex index is invalid
      */
     public int ancestor(int v, int w) {
+        if (!isVertexValid(v) || !isVertexValid(w))
+            throw new IllegalArgumentException();
+        if (v == w)
+            return v;
         return ancestor(List.of(v), List.of(w));
     }
 

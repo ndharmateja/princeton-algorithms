@@ -41,13 +41,9 @@ public class WordNet {
             // Put the (<synset id>, <synset string>) pair in the synsetIdToStringMap
             synsetIdToStringMap.put(synsetId, synsetNounsString);
 
-            // Create a set of strings to store the nouns related to the current id
-            Set<String> synsetNounsSet = new HashSet<>();
-
+            // For each noun, add the noun and the corresponding synset id
+            // to the nounToSynsetIdsMap
             for (String noun : synsetNounsString.split(" ")) {
-                // Go over each noun and add it to the synsetNounsSet
-                synsetNounsSet.add(noun);
-
                 // Add each (<synset noun>, set<synset id>) to nounToSynsetIdsMap
                 // If there is no corresponding set to the current noun, create one
                 if (!nounToSynsetIdsMap.containsKey(noun)) {

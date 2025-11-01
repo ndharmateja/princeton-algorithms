@@ -1,5 +1,6 @@
 package main.chapter2.p_2_4_33;
 
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 /**
@@ -13,11 +14,12 @@ import java.util.NoSuchElementException;
  *            must implement Comparable<Item>.
  */
 public class IndexMinPQ<T extends Comparable<T>> {
+    // qp - stores
     private int maxN;
-    private int N;
-    private int[] qp;
-    private int[] pq;
-    private T[] keys;
+    private final int[] qp;
+    private final int[] pq;
+    private final T[] keys;
+    private int size;
 
     /**
      * Creates an empty indexed minimum priority queue with capacity for indices
@@ -31,14 +33,21 @@ public class IndexMinPQ<T extends Comparable<T>> {
         if (maxN < 0)
             throw new IllegalArgumentException("maxN cannot be negative");
 
+        // maxN represents the number of elements our priority queue can store
+        // We initialize qp to all -1 because initially no elements are associated
+        // with any indices
         this.maxN = maxN;
         qp = new int[maxN];
-        for (int i = 0; i < maxN; i++)
-            qp[i] = -1;
+        Arrays.fill(qp, -1);
 
+        // Create the pq array with maxN+1 elements as index 0 is unused in our
+        // priority queue implementation
         pq = new int[maxN + 1];
-        keys = (T[]) new Comparable[maxN + 1];
-        N = 0;
+        Arrays.fill(pq, -1);
+
+        // Initialize the keys array
+        this.keys = (T[]) new Comparable[maxN];
+        this.size = 0;
     }
 
     private void swim(int k) {
@@ -49,39 +58,37 @@ public class IndexMinPQ<T extends Comparable<T>> {
     }
 
     private void sink(int k) {
-        while (2 * k <= N) {
+        while (2 * k <= size) {
             int j = 2 * k;
-            if (j < N && greater(j, j + 1))
+            if (j < size && greater(j, j + 1))
                 j++;
             if (!greater(k, j))
                 break;
             exch(k, j);
-            j = k;
+            k = j;
         }
     }
 
     private boolean greater(int i, int j) {
-        return keys[i].compareTo(keys[j]) > 0;
+        return keys[pq[i]].compareTo(keys[pq[j]]) > 0;
     }
 
+    // i and j are 1-based indices in the heap array pq
     private void exch(int i, int j) {
-        int tempIndex = pq[i];
+        // Swap the qp elements corresponding to i and j in the heap
+        int ithIndex = pq[i];
+        int jthIndex = pq[j];
+        qp[ithIndex] = j;
+        qp[jthIndex] = i;
+
+        // Exchange the pq elements
+        int temp = pq[i];
         pq[i] = pq[j];
-        pq[j] = tempIndex;
-
-        T temp = keys[i];
-        keys[i] = keys[j];
-        keys[j] = temp;
-
-        int ithItemIndex = pq[i];
-        int jthItemIndex = pq[j];
-        tempIndex = qp[ithItemIndex];
-        qp[ithItemIndex] = qp[jthItemIndex];
-        qp[jthItemIndex] = tempIndex;
+        pq[j] = temp;
     }
 
     private void validateIndex(int k) {
-        if (k < 0 || k > maxN)
+        if (k < 0 || k >= maxN)
             throw new IllegalArgumentException("Index k out of bounds");
     }
 
@@ -100,17 +107,18 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NullPointerException     if item is null
      */
     public void insert(int k, T item) {
+        // Validations
         validateIndex(k);
         validateItem(item);
         if (qp[k] != -1)
             throw new IllegalArgumentException("Index k not empty.");
 
-        N++;
-        pq[N] = k;
-        keys[N] = item;
-        qp[k] = N;
+        size++;
+        pq[size] = k;
+        keys[k] = item;
+        qp[k] = size;
 
-        swim(N);
+        swim(size);
     }
 
     /**
@@ -123,14 +131,21 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NullPointerException     if item is null
      */
     public void change(int k, T item) {
+        // Validations
         validateIndex(k);
         validateItem(item);
         if (qp[k] == -1)
             throw new NoSuchElementException("Index k is currently not in the priority queue");
 
-        int indexInPq = qp[k];
-        keys[indexInPq] = item;
+        // Change the item in the keys array
+        keys[k] = item;
 
+        // Find where element corresponding to index 'k' is stored in the heap
+        // and do swim if new item's priority is less than the old item's priority
+        // or sink if the new item's priority is greater than the old item's
+        // Instead of an if condition, we do both a sink and a swim
+        // and only one of them will be executed appropriately
+        int indexInPq = qp[k];
         swim(indexInPq);
         sink(indexInPq);
     }
@@ -143,7 +158,10 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws IllegalArgumentException if k is out of range
      */
     public boolean contains(int k) {
+        // Validation
         validateIndex(k);
+
+        // If qp[k] == -1, it means that no item was associated with index k
         return qp[k] != -1;
     }
 
@@ -155,23 +173,34 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NoSuchElementException   if index k is not in the PQ
      */
     public void delete(int k) {
+        // Validations
         validateIndex(k);
         if (qp[k] == -1)
             throw new NoSuchElementException("Index k is currently not in the priority queue");
 
-        // Swap root with the last element and decrement size
-        int kthIndexInPQ = qp[k];
-        exch(kthIndexInPQ, N);
-        N--;
+        //
+        int heapIndexOfK = qp[k];
+
+        // Check if the element to delete is the last element in the heap
+        // then we don't need to do any heap restoring operations
+        if (heapIndexOfK == this.size) {
+            // Prevent loitering
+            qp[k] = -1;
+            keys[k] = null;
+            pq[this.size--] = -1;
+            return;
+        }
+
+        exch(heapIndexOfK, this.size--);
 
         // Prevent loitering
-        qp[pq[N]] = -1;
-        pq[N] = 0;
-        keys[N] = null;
+        qp[k] = -1;
+        keys[k] = null;
+        pq[size + 1] = -1;
 
-        // restore heap property
-        swim(kthIndexInPQ);
-        sink(kthIndexInPQ);
+        // Restore heap property
+        swim(heapIndexOfK);
+        sink(heapIndexOfK);
     }
 
     /**
@@ -181,9 +210,13 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NoSuchElementException if the PQ is empty
      */
     public T min() {
+        // Validation
         if (isEmpty())
             throw new NoSuchElementException("Priority Queue is empty");
-        return keys[1];
+
+        // Return the min element
+        // pq[1] stores the index of the min element
+        return keys[pq[1]];
     }
 
     /**
@@ -193,8 +226,11 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NoSuchElementException if the PQ is empty
      */
     public int minIndex() {
+        // Validation
         if (isEmpty())
             throw new NoSuchElementException("Priority Queue is empty");
+
+        // pq[1] stores the index of the min element
         return pq[1];
     }
 
@@ -205,24 +241,25 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @throws NoSuchElementException if the PQ is empty
      */
     public int delMin() {
+        // Validation
         if (isEmpty())
             throw new NoSuchElementException("Priority Queue is empty");
-        int index = pq[1];
 
-        // Swap root with the last element and decrement size
-        exch(1, N);
-        N--;
+        // Get the index of the min element
+        int indexOfMinElement = pq[1];
+
+        // Exchange 1 and size in the heap and decrement the size
+        exch(1, this.size--);
 
         // Prevent loitering
-        qp[pq[N]] = -1;
-        pq[N] = 0;
-        keys[N] = null;
+        qp[indexOfMinElement] = -1;
+        keys[indexOfMinElement] = null;
+        pq[size + 1] = -1;
 
-        // restore heap property
+        // Restore heap order
         sink(1);
 
-        // Return the index of the deleted element
-        return index;
+        return indexOfMinElement;
     }
 
     /**
@@ -231,7 +268,7 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @return true if no keys are in the PQ
      */
     public boolean isEmpty() {
-        return N == 0;
+        return size == 0;
     }
 
     /**
@@ -240,6 +277,6 @@ public class IndexMinPQ<T extends Comparable<T>> {
      * @return number of (index, key) pairs
      */
     public int size() {
-        return N;
+        return size;
     }
 }

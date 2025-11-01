@@ -14,12 +14,44 @@ import java.util.NoSuchElementException;
  *            must implement Comparable<Item>.
  */
 public class IndexMinPQ<T extends Comparable<T>> {
-    // qp - stores
+    // maxN - the maximum number of elements that can be stored in this PQ
+    // size - the current number of elements in the PQ
     private int maxN;
-    private final int[] qp;
-    private final int[] pq;
-    private final T[] keys;
     private int size;
+
+    // pq[i] - gives the index 'k' of the key that is at heap position i
+    // (note that heap used 1-based indexing => root of the heap at pq[1])
+    // The heap is organized according to the values of keys[k] that are Comparables
+    private final int[] pq;
+
+    // qp[k] - gives the heap position of index k (i.e., qp[pq[i]] == i)
+    // qp and pq are exact inverses of each other.
+    // If qp[k] == -1, then index k is not currently in the PQ.
+    private final int[] qp;
+
+    // keys[k] - stores the key associated with index k
+    // The priority queue operations (insert, delMin, change, etc.)
+    // compare based on these key values.
+    private final T[] keys;
+
+    // Eg:
+    // IndexMinPQ<Integer> pq = new IndexMinPQ<>(6);
+    // pq.insert(0, 90);
+    // pq.insert(1, 10);
+    // pq.insert(2, 50);
+    // pq.insert(3, 20);
+    // pq.insert(4, 30);
+    //
+    // Heap now looks like
+    // .......1:10
+    // ....../....\
+    // ....3:20....2:50
+    // .../....\
+    // 0:90....4:30
+    //
+    // ..pq = [-1, 1, 3, 2, 0, 4, -1] // heap positions -> key indices
+    // ..qp = [4, 1, 3, 2, 5, -1].... // key indices -> heap positions
+    // keys = [90, 10, 50, 20, 30, null]
 
     /**
      * Creates an empty indexed minimum priority queue with capacity for indices

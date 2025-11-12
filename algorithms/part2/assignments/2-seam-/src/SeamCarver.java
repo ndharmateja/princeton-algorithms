@@ -206,11 +206,11 @@ public class SeamCarver {
         int h = this.height();
         Picture newPicture = new Picture(w, h - 1);
 
-        for (int x = 0; x < h; x++) {
+        for (int x = 0; x < w; x++) {
             int y = 0;
             int oldY = 0;
             while (y < h - 1) {
-                if (oldY == seam[y]) {
+                if (oldY == seam[x]) {
                     oldY++;
                     continue;
                 }

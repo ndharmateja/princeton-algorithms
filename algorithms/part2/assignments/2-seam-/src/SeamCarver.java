@@ -3,7 +3,7 @@ import java.awt.Color;
 import java.util.Arrays;
 
 public class SeamCarver {
-    private final Picture picture;
+    private Picture picture;
     private double[][] energyMatrix;
     private int[] verticalSeam;
     private int[] horizontalSeam;
@@ -12,12 +12,18 @@ public class SeamCarver {
     public SeamCarver(Picture picture) {
         if (picture == null)
             throw new IllegalArgumentException("picture cannot be null");
+        initialize(new Picture(picture));
+    }
+
+    private void initialize(Picture picture) {
         this.picture = new Picture(picture);
-        this.energyMatrix = new double[picture.width()][picture.height()];
+        this.verticalSeam = null;
+        this.horizontalSeam = null;
         this.computeEnergies();
     }
 
     private void computeEnergies() {
+        this.energyMatrix = new double[picture.width()][picture.height()];
         for (int x = 0; x < this.width(); x++) {
             for (int y = 0; y < this.height(); y++) {
                 energyMatrix[x][y] = isBorderPixel(x, y) ? 1000 : computeEnergy(x, y);
@@ -94,6 +100,14 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
+        if (this.horizontalSeam != null)
+            return this.horizontalSeam;
+
+        int w = this.width();
+        int h = this.height();
+        if (h == 1)
+            return new int[w];
+
         return new int[0];
     }
 
@@ -102,13 +116,13 @@ public class SeamCarver {
         if (this.verticalSeam != null)
             return this.verticalSeam;
 
-        if (this.width() == 1)
-            return null;
+        int w = this.width();
+        int h = this.height();
+        if (w == 1)
+            return new int[h];
 
         // Create the dp array and copy the first col (which is the first row
         // of the picture)
-        int w = this.width();
-        int h = this.height();
         double[][] dp = new double[w][h];
         for (int x = 0; x < w; x++)
             dp[x][0] = energyMatrix[x][0];
@@ -187,6 +201,24 @@ public class SeamCarver {
         if (this.height() <= 1)
             throw new IllegalArgumentException("cannot remove horizontal seam as height is <= 1");
         validateSeam(seam, this.width(), this.height());
+
+        int w = this.width();
+        int h = this.height();
+        Picture newPicture = new Picture(w, h - 1);
+
+        for (int x = 0; x < h; x++) {
+            int y = 0;
+            int oldY = 0;
+            while (y < h - 1) {
+                if (oldY == seam[y]) {
+                    oldY++;
+                    continue;
+                }
+                newPicture.setRGB(x, y++, this.picture.getRGB(x, oldY++));
+            }
+        }
+
+        initialize(newPicture);
     }
 
     // remove vertical seam from current picture
@@ -194,11 +226,32 @@ public class SeamCarver {
         if (this.width() <= 1)
             throw new IllegalArgumentException("cannot remove vertical seam as width is <= 1");
         validateSeam(seam, this.height(), this.width());
+
+        int w = this.width();
+        int h = this.height();
+        Picture newPicture = new Picture(w - 1, h);
+
+        for (int y = 0; y < h; y++) {
+            int x = 0;
+            int oldX = 0;
+            while (x < w - 1) {
+                if (oldX == seam[y]) {
+                    oldX++;
+                    continue;
+                }
+                newPicture.setRGB(x++, y, this.picture.getRGB(oldX++, y));
+            }
+        }
+
+        initialize(newPicture);
     }
 
     // unit testing (optional)
     public static void main(String[] args) {
         SeamCarver sc = new SeamCarver(new Picture("data/6x5.png"));
-        System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        int[] verticalSeam = sc.findVerticalSeam();
+        System.out.println(Arrays.toString(verticalSeam));
+        sc.removeVerticalSeam(verticalSeam);
+        System.out.println("removed vertical seam");
     }
 }

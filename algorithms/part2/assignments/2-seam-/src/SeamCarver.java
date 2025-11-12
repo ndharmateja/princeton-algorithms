@@ -178,7 +178,7 @@ public class SeamCarver {
         if (w == 1) {
             this.verticalSeam = new int[h];
             Arrays.fill(this.verticalSeam, 0);
-            return Arrays.copyOf(this.verticalSeam, w);
+            return Arrays.copyOf(this.verticalSeam, h);
         }
 
         // Create the dp array and copy the first col (which is the first row

@@ -1,9 +1,12 @@
 import edu.princeton.cs.algs4.Picture;
 import java.awt.Color;
+import java.util.Arrays;
 
 public class SeamCarver {
     private final Picture picture;
     private double[][] energyMatrix;
+    private int[] verticalSeam;
+    private int[] horizontalSeam;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
@@ -80,7 +83,6 @@ public class SeamCarver {
         for (int i = 1; i < seam.length; i++)
             if (Math.abs(seam[i] - seam[i - 1]) > 1)
                 throw new IllegalArgumentException("consecutive seam values should differ by atmost 1");
-
     }
 
     // energy of pixel at column x and row y
@@ -97,7 +99,68 @@ public class SeamCarver {
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        return new int[0];
+        if (this.verticalSeam != null)
+            return this.verticalSeam;
+
+        // Create the dp array and copy the first col (which is the first row
+        // of the picture)
+        int w = this.width();
+        int h = this.height();
+        double[][] dp = new double[w][h];
+        for (int x = 0; x < w; x++)
+            dp[x][0] = energyMatrix[x][0];
+
+        // for each subsequent col (row in the picture)
+        for (int y = 1; y < h; y++) {
+            dp[0][y] = min(dp[0][y - 1], dp[1][y - 1]) + energyMatrix[0][y];
+            for (int x = 1; x < w - 1; x++)
+                dp[x][y] = min(dp[x - 1][y - 1], dp[x][y - 1], dp[x + 1][y - 1]) + energyMatrix[x][y];
+            dp[w - 1][y] = min(dp[w - 2][y - 1], dp[w - 1][y - 1]) + energyMatrix[w - 1][y];
+        }
+
+        // Backtrack the path from the min dp value in the last row
+        // of the picture to the top row
+        this.verticalSeam = new int[h];
+        int y = h - 1;
+        int minIndex = 0;
+        double minValue = dp[0][y];
+        for (int x = 1; x < w; x++) {
+            if (dp[x][h - 1] < minValue) {
+                minIndex = x;
+                minValue = dp[x][h - 1];
+            }
+        }
+        this.verticalSeam[y] = minIndex;
+
+        for (y = h - 2; y >= 0; y--) {
+            int x = minIndex;
+            if (dp[x - 1][y] <= dp[x][y] && dp[x - 1][y] <= dp[x + 1][y])
+                minIndex = x - 1;
+            else if (dp[x][y] <= dp[x - 1][y] && dp[x - 1][y] <= dp[x + 1][y])
+                minIndex = x;
+            else
+                minIndex = x + 1;
+            this.verticalSeam[y] = minIndex;
+        }
+        return this.verticalSeam;
+    }
+
+    private void print2dArray(double[][] arr) {
+        for (int y = 0; y < this.height(); y++) {
+            for (int x = 0; x < this.width(); x++) {
+                System.out.print(String.format("%7.2f ", arr[x][y]));
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    private static double min(double x, double y) {
+        return x < y ? x : y;
+    }
+
+    private static double min(double x, double y, double z) {
+        return min(min(x, y), z);
     }
 
     // remove horizontal seam from current picture
@@ -117,6 +180,6 @@ public class SeamCarver {
     // unit testing (optional)
     public static void main(String[] args) {
         SeamCarver sc = new SeamCarver(new Picture("data/6x5.png"));
-        System.out.println(sc.energy(6, 4));
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
     }
 }

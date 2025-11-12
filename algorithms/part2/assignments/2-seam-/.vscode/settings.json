@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "/Users/dharma/projects/princeton-algorithms/lib/algs4.jar",
+        "algs4.jar",
+        "/Users/dharma/projects/princeton-algorithms/lib/stdlib.jar",
+        "stdlib.jar"
+    ],
+}

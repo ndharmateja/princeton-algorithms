@@ -9,14 +9,14 @@ public class SeamCarver {
     private int[] horizontalSeam;
 
     // create a seam carver object based on the given picture
-    public SeamCarver(Picture picture) {
-        if (picture == null)
+    public SeamCarver(Picture p) {
+        if (p == null)
             throw new IllegalArgumentException("picture cannot be null");
-        initialize(new Picture(picture));
+        initialize(new Picture(p));
     }
 
-    private void initialize(Picture picture) {
-        this.picture = new Picture(picture);
+    private void initialize(Picture p) {
+        this.picture = new Picture(p);
         this.verticalSeam = null;
         this.horizontalSeam = null;
         this.computeEnergies();
@@ -100,13 +100,15 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        if (this.horizontalSeam != null)
-            return this.horizontalSeam;
-
         int w = this.width();
         int h = this.height();
-        if (h == 1)
-            return new int[w];
+        if (this.horizontalSeam != null)
+            return Arrays.copyOf(this.horizontalSeam, w);
+        if (h == 1) {
+            this.horizontalSeam = new int[w];
+            Arrays.fill(horizontalSeam, 0);
+            return Arrays.copyOf(this.horizontalSeam, w);
+        }
 
         // Create the dp array and copy the first row (which is the first col
         // of the picture)
@@ -116,31 +118,34 @@ public class SeamCarver {
 
         // for each subsequent row (col in the picture)
         for (int x = 1; x < w; x++) {
-            dp[x][0] = min(dp[x - 1][0], dp[x][0]) + energyMatrix[x][0];
+            dp[x][0] = min(dp[x - 1][0], dp[x - 1][1]) + energyMatrix[x][0];
             for (int y = 1; y < h - 1; y++)
-                dp[x][y] = min(dp[x - 1][y], dp[x][y - 1], dp[x][y + 1]) + energyMatrix[x][y];
-            dp[x][h - 1] = min(dp[x - 1][h - 1], dp[x][h - 2]) + energyMatrix[x][h - 1];
+                dp[x][y] = min(dp[x - 1][y - 1], dp[x - 1][y], dp[x - 1][y + 1]) + energyMatrix[x][y];
+            dp[x][h - 1] = min(dp[x - 1][h - 2], dp[x - 1][h - 1]) + energyMatrix[x][h - 1];
         }
 
         // Backtrack the path from the min dp value in the last col
         // of the picture to the first col
         this.horizontalSeam = new int[w];
         int x = w - 1;
-        int minY = 0;
+        int minIndex = 0;
         double minValue = dp[x][0];
         for (int y = 1; y < h; y++) {
-            if (dp[x][y] < minValue) {
-                minY = y;
-                minValue = dp[x][y];
+            if (dp[w - 1][y] < minValue) {
+                minIndex = y;
+                minValue = dp[w - 1][y];
             }
         }
-        this.horizontalSeam[x] = minY;
+        this.horizontalSeam[x] = minIndex;
 
         for (x = w - 2; x >= 0; x--) {
-            int y = minY;
-            minY = findMinIndexForHorizontalSeam(dp, x, y);
-            this.horizontalSeam[x] = minY;
+            int y = minIndex;
+            minIndex = findMinIndexForHorizontalSeam(dp, x, y);
+            this.horizontalSeam[x] = minIndex;
         }
+
+        // print2dArray(energyMatrix);
+        // print2dArray(dp);
 
         return Arrays.copyOf(this.horizontalSeam, w);
     }
@@ -166,13 +171,15 @@ public class SeamCarver {
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        if (this.verticalSeam != null)
-            return this.verticalSeam;
-
         int w = this.width();
         int h = this.height();
-        if (w == 1)
-            return new int[h];
+        if (this.verticalSeam != null)
+            return Arrays.copyOf(this.verticalSeam, h);
+        if (w == 1) {
+            this.verticalSeam = new int[h];
+            Arrays.fill(this.verticalSeam, 0);
+            return Arrays.copyOf(this.verticalSeam, w);
+        }
 
         // Create the dp array and copy the first col (which is the first row
         // of the picture)
@@ -231,15 +238,15 @@ public class SeamCarver {
             return x + 1;
     }
 
-    private void print2dArray(double[][] arr) {
-        for (int y = 0; y < this.height(); y++) {
-            for (int x = 0; x < this.width(); x++) {
-                System.out.print(String.format("%7.2f ", arr[x][y]));
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
+    // private void print2dArray(double[][] arr) {
+    // for (int y = 0; y < this.height(); y++) {
+    // for (int x = 0; x < this.width(); x++) {
+    // System.out.print(String.format("%7.2f ", arr[x][y]));
+    // }
+    // System.out.println();
+    // }
+    // System.out.println();
+    // }
 
     private static double min(double x, double y) {
         return x < y ? x : y;
@@ -301,10 +308,8 @@ public class SeamCarver {
 
     // unit testing (optional)
     public static void main(String[] args) {
-        SeamCarver sc = new SeamCarver(new Picture("data/6x5.png"));
-        int[] verticalSeam = sc.findVerticalSeam();
-        System.out.println(Arrays.toString(verticalSeam));
-        sc.removeVerticalSeam(verticalSeam);
-        System.out.println("removed vertical seam");
+        SeamCarver sc = new SeamCarver(new Picture("data/5x6.png"));
+        int[] horizontalSeam = sc.findHorizontalSeam();
+        System.out.println(Arrays.toString(horizontalSeam));
     }
 }

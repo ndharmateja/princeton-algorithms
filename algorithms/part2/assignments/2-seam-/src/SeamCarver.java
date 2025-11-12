@@ -102,6 +102,9 @@ public class SeamCarver {
         if (this.verticalSeam != null)
             return this.verticalSeam;
 
+        if (this.width() == 1)
+            return null;
+
         // Create the dp array and copy the first col (which is the first row
         // of the picture)
         int w = this.width();
@@ -134,15 +137,31 @@ public class SeamCarver {
 
         for (y = h - 2; y >= 0; y--) {
             int x = minIndex;
-            if (dp[x - 1][y] <= dp[x][y] && dp[x - 1][y] <= dp[x + 1][y])
-                minIndex = x - 1;
-            else if (dp[x][y] <= dp[x - 1][y] && dp[x - 1][y] <= dp[x + 1][y])
-                minIndex = x;
-            else
-                minIndex = x + 1;
+            minIndex = findMinIndex(dp, x, y);
             this.verticalSeam[y] = minIndex;
         }
+
+        // print2dArray(dp);
         return this.verticalSeam;
+    }
+
+    // Returns either x-1 or x or x+1
+    // depending on the min value among dp[x-1][y], dp[x][y], dp[x+1][y]
+    // respectively
+    private int findMinIndex(double[][] dp, int x, int y) {
+        int w = this.width();
+
+        if (x == 0)
+            return dp[x][y] <= dp[x + 1][y] ? x : x + 1;
+        if (x == w - 1)
+            return dp[x - 1][y] <= dp[x][y] ? x - 1 : x;
+
+        if (dp[x - 1][y] <= dp[x][y] && dp[x - 1][y] <= dp[x + 1][y])
+            return x - 1;
+        else if (dp[x][y] <= dp[x - 1][y] && dp[x][y] <= dp[x + 1][y])
+            return x;
+        else
+            return x + 1;
     }
 
     private void print2dArray(double[][] arr) {

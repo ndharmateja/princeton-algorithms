@@ -108,7 +108,60 @@ public class SeamCarver {
         if (h == 1)
             return new int[w];
 
-        return new int[0];
+        // Create the dp array and copy the first row (which is the first col
+        // of the picture)
+        double[][] dp = new double[w][h];
+        for (int y = 0; y < h; y++)
+            dp[0][y] = energyMatrix[0][y];
+
+        // for each subsequent row (col in the picture)
+        for (int x = 1; x < w; x++) {
+            dp[x][0] = min(dp[x - 1][0], dp[x][0]) + energyMatrix[x][0];
+            for (int y = 1; y < h - 1; y++)
+                dp[x][y] = min(dp[x - 1][y], dp[x][y - 1], dp[x][y + 1]) + energyMatrix[x][y];
+            dp[x][h - 1] = min(dp[x - 1][h - 1], dp[x][h - 2]) + energyMatrix[x][h - 1];
+        }
+
+        // Backtrack the path from the min dp value in the last col
+        // of the picture to the first col
+        this.horizontalSeam = new int[w];
+        int x = w - 1;
+        int minY = 0;
+        double minValue = dp[x][0];
+        for (int y = 1; y < h; y++) {
+            if (dp[x][y] < minValue) {
+                minY = y;
+                minValue = dp[x][y];
+            }
+        }
+        this.horizontalSeam[x] = minY;
+
+        for (x = w - 2; x >= 0; x--) {
+            int y = minY;
+            minY = findMinIndexForHorizontalSeam(dp, x, y);
+            this.horizontalSeam[x] = minY;
+        }
+
+        return Arrays.copyOf(this.horizontalSeam, w);
+    }
+
+    // Returns either y-1 or y or y+1
+    // depending on the min value among dp[x][y-1], dp[x][y], dp[x][y+1]
+    // respectively
+    private int findMinIndexForHorizontalSeam(double[][] dp, int x, int y) {
+        int h = this.height();
+
+        if (y == 0)
+            return dp[x][y] <= dp[x][y + 1] ? y : y + 1;
+        if (y == h - 1)
+            return dp[x][y - 1] <= dp[x][y] ? y - 1 : y;
+
+        if (dp[x][y - 1] <= dp[x][y] && dp[x][y - 1] <= dp[x][y + 1])
+            return y - 1;
+        else if (dp[x][y] <= dp[x][y - 1] && dp[x][y] <= dp[x][y + 1])
+            return y;
+        else
+            return y + 1;
     }
 
     // sequence of indices for vertical seam
@@ -151,18 +204,18 @@ public class SeamCarver {
 
         for (y = h - 2; y >= 0; y--) {
             int x = minIndex;
-            minIndex = findMinIndex(dp, x, y);
+            minIndex = findMinIndexForVerticalSeam(dp, x, y);
             this.verticalSeam[y] = minIndex;
         }
 
         // print2dArray(dp);
-        return this.verticalSeam;
+        return Arrays.copyOf(this.verticalSeam, h);
     }
 
     // Returns either x-1 or x or x+1
     // depending on the min value among dp[x-1][y], dp[x][y], dp[x+1][y]
     // respectively
-    private int findMinIndex(double[][] dp, int x, int y) {
+    private int findMinIndexForVerticalSeam(double[][] dp, int x, int y) {
         int w = this.width();
 
         if (x == 0)

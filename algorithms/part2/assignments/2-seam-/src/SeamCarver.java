@@ -7,6 +7,8 @@ public class SeamCarver {
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
+        if (picture == null)
+            throw new IllegalArgumentException("picture cannot be null");
         this.picture = new Picture(picture);
         this.energyMatrix = new double[picture.width()][picture.height()];
         this.computeEnergies();

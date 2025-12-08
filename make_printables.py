@@ -8,7 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 # === CONFIG ===
-SLIDES_FOLDER = "./algorithms/part2/slides"
+SLIDES_FOLDER = "./algorithms/part1/slides"
 NOTES_JSON_PATH = f"{SLIDES_FOLDER}/notes.json"
 OUTPUT_FOLDER = f"{SLIDES_FOLDER}/printable"
 

@@ -73,8 +73,8 @@ public class Alphabet {
 
     // convert index to corresponding alphabet char
     char toChar(int index) {
-        if (index < 0 || index > this.R)
-            throw new IllegalArgumentException("index should be between 0 and R (inclusive).");
+        if (index < 0 || index >= this.R)
+            throw new IllegalArgumentException("index should be between 0 and R-1 (inclusive).");
         return this.chars[index];
     }
 
@@ -87,6 +87,8 @@ public class Alphabet {
 
     // is c in the alphabet?
     boolean contains(char c) {
+        if (c >= this.inverse.length)
+            return false;
         return inverse[c] != -1;
     }
 
@@ -113,7 +115,7 @@ public class Alphabet {
     String toChars(int[] indices) {
         char[] indicesChars = new char[indices.length];
         for (int i = 0; i < indicesChars.length; i++) {
-            indicesChars[i] = this.toChar(i);
+            indicesChars[i] = this.toChar(indices[i]);
         }
         return new String(indicesChars);
     }

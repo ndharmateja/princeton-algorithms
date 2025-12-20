@@ -51,6 +51,9 @@ public class Alphabet {
         }
     }
 
+    // Create Alphabet from all the chars corresponding to 0, 1, 2, ..., maxChars-1
+    // For example, if maxChars is 128, it would create Alphabet from all the ASCII
+    // characters
     private Alphabet(int maxChars) {
         this.R = maxChars;
         this.lgR = computeLgR(R);

@@ -29,7 +29,27 @@ public class Alphabet {
 
     // create a new alphabet from chars in s
     public Alphabet(String s) {
-        this(s, NUM_CHARS_UNICODE16);
+        // We are computing the max char value across all the chars in the given string
+        // so that the inverse size need not be 65536 always
+        // for example if the only chars used in the string are A, C, D, G
+        // then we could have an inverse array of 128 size that covers all the ASCII
+        // vals and that would be enough
+        this(s, computeMaxChars(s));
+    }
+
+    private static int computeMaxChars(String s) {
+        int maxCharIndex = -1;
+        for (char c : s.toCharArray()) {
+            maxCharIndex = Math.max(maxCharIndex, c);
+        }
+
+        if (maxCharIndex >= NUM_CHARS_EXTENDED_ASCII) {
+            return NUM_CHARS_UNICODE16;
+        }
+        if (maxCharIndex >= NUM_CHARS_ASCII) {
+            return NUM_CHARS_EXTENDED_ASCII;
+        }
+        return NUM_CHARS_ASCII;
     }
 
     private Alphabet(String s, int maxChars) {
